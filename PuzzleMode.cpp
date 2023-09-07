@@ -28,6 +28,7 @@ PuzzleMode::PuzzleMode() {
 	load_sprite("sprites-runtime/down_arrow.bin", down_arrow);
 	load_sprite("sprites-runtime/right_arrow.bin", right_arrow);
 	load_sprite("sprites-runtime/background.bin", background_tile);
+	load_sprite("sprites-runtime/background_white.bin", background_white);
 }
 
 PuzzleMode::~PuzzleMode() {
@@ -88,23 +89,32 @@ void PuzzleMode::update(float elapsed) {
 }
 
 void PuzzleMode::draw(glm::uvec2 const &drawable_size) {
-	//try to draw player
-	ppu.sprites[63].x = 50;
-	ppu.sprites[63].y = 30;
-	ppu.sprites[63].index = tile_idx[player];
-	ppu.sprites[63].attributes = 0b00000000;
+	// draw every element in level grid individually
+	uint8_t sprite_used = 0;
+	draw_tile_of_type(door, sprite_used);
+	draw_tile_of_type(key, sprite_used);
+	draw_tile_of_type(reverse, sprite_used);
+	draw_tile_of_type(block, sprite_used);
+	draw_tile_of_type(player, sprite_used);
 
-	for (uint32_t i = 0; i < 63; ++i) {
-		ppu.sprites[i].index = tile_idx[door];
-		ppu.sprites[i].y = 241;
+	// set all unused sprites off screen
+	for (uint8_t i = sprite_used; i < 64; i++) {
+		ppu.sprites[i].y = 255;
 	}
 
-	//Background tiles & color is just pure white
+	//Background tiles & color is just 3 * pure white pudding
+	//and the center being LevelGridWidth*LevelGridHeight green grid
 	for (uint32_t y = 0; y < PPU466::BackgroundHeight; ++y) {
 		for (uint32_t x = 0; x < PPU466::BackgroundWidth; ++x) {
-			ppu.background[x+PPU466::BackgroundWidth*y] = tile_idx[background_tile] | (palette_idx[background_tile] << 8);
+			if ((y < 3) | (y > ((PPU466::BackgroundHeight / 2) - 4)) | (x < 3) | (x > ((PPU466::BackgroundWidth / 2) - 4))) {
+				ppu.background[x+PPU466::BackgroundWidth*y] = tile_idx[background_white] | (palette_idx[background_white] << 8);
+			} else {
+				ppu.background[x+PPU466::BackgroundWidth*y] = tile_idx[background_tile] | (palette_idx[background_tile] << 8);
+			}
 		}
 	}
+	ppu.background_position.x = 0;
+	ppu.background_position.y = 0;
 	ppu.background_color = glm::u8vec4(0xff, 0xff, 0xff, 0xff);
 
 	ppu.draw(drawable_size);
@@ -154,5 +164,24 @@ void PuzzleMode::load_sprite(const char* file_dir, tile_type ttype) {
 			tile_writing->bit1[y] = tile_writing->bit1[y] | (bit_idx_1 << x);
 			idx++;
 		}
+	}
+}
+
+glm::u8vec2 PuzzleMode::grid_to_screen_pos(glm::u8vec2 grid_pos) {
+	//Surrounding level grid is 3 tiles of white space padding
+	uint8_t x = grid_pos.x + 3;
+	uint8_t y = grid_pos.y + 3;
+	return glm::uvec2(x * 8, y * 8);
+}
+
+void PuzzleMode::draw_tile_of_type(PuzzleMode::tile_type ttype, uint8_t &sprite_used) {
+	if (sprite_used >= 64) return;
+	for (const glm::u8vec2& p_pos : level_state[ttype]) {
+		glm::u8vec2 screen_pos = grid_to_screen_pos(p_pos);
+		ppu.sprites[sprite_used].x = screen_pos.x;
+		ppu.sprites[sprite_used].y = screen_pos.y;
+		ppu.sprites[sprite_used].index = tile_idx[ttype];
+		ppu.sprites[sprite_used].attributes = palette_idx[ttype];
+		sprite_used++;
 	}
 }
