@@ -6,7 +6,7 @@
 
 **Screen Shot:**
 
-![Screen Shot](screenshot.png)
+![Screen Shot](game_snip.png)
 
 **How does the Asset Pipeline Works:**
 
