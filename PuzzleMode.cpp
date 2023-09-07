@@ -160,6 +160,7 @@ bool PuzzleMode::can_move(glm::u8vec2 pos){
 	}
 
 	std::vector<glm::u8vec2> *blocks = &level_state[block];
+	// https://stackoverflow.com/questions/571394/how-to-find-out-if-an-item-is-present-in-a-stdvector
 	if (std::find(blocks->begin(), blocks->end(), pos) != blocks->end()) {
 		return false;
 	}
