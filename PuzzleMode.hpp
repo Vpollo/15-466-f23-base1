@@ -38,7 +38,8 @@ struct PuzzleMode : Mode {
 		up_arrow,
 		down_arrow,
 		left_arrow,
-		right_arrow
+		right_arrow,
+		background_tile
 	};
 
 	std::map<tile_type, uint8_t> tile_idx {
@@ -51,7 +52,8 @@ struct PuzzleMode : Mode {
 		{up_arrow, (uint8_t)6},
 		{down_arrow, (uint8_t)7},
 		{left_arrow, (uint8_t)8},
-		{right_arrow, (uint8_t)9}
+		{right_arrow, (uint8_t)9},
+		{background_tile, (uint8_t)10}
 	};
 
 	std::map<tile_type, uint8_t> palette_idx;

@@ -27,6 +27,7 @@ PuzzleMode::PuzzleMode() {
 	load_sprite("sprites-runtime/left_arrow.bin", left_arrow);
 	load_sprite("sprites-runtime/down_arrow.bin", down_arrow);
 	load_sprite("sprites-runtime/right_arrow.bin", right_arrow);
+	load_sprite("sprites-runtime/background.bin", background_tile);
 }
 
 PuzzleMode::~PuzzleMode() {
@@ -89,30 +90,22 @@ void PuzzleMode::update(float elapsed) {
 void PuzzleMode::draw(glm::uvec2 const &drawable_size) {
 	//try to draw player
 	ppu.sprites[63].x = 50;
-	ppu.sprites[63].y = 150;
+	ppu.sprites[63].y = 30;
 	ppu.sprites[63].index = tile_idx[player];
 	ppu.sprites[63].attributes = 0b00000000;
 
 	for (uint32_t i = 0; i < 63; ++i) {
+		ppu.sprites[i].index = tile_idx[door];
 		ppu.sprites[i].y = 241;
 	}
 
-	// //background color will be some hsv-like fade:
-	ppu.background_color = glm::u8vec4(
-		std::min(255,std::max(0,int32_t(255 * 0.5f * (0.5f + std::sin( 2.0f * M_PI * (background_fade + 0.0f / 3.0f) ) ) ))),
-		std::min(255,std::max(0,int32_t(255 * 0.5f * (0.5f + std::sin( 2.0f * M_PI * (background_fade + 1.0f / 3.0f) ) ) ))),
-		std::min(255,std::max(0,int32_t(255 * 0.5f * (0.5f + std::sin( 2.0f * M_PI * (background_fade + 2.0f / 3.0f) ) ) ))),
-		0xff
-	);
-
-	//tilemap gets recomputed every frame as some weird plasma thing:
-	//NOTE: don't do this in your game! actually make a map or something :-)
+	//Background tiles & color is just pure white
 	for (uint32_t y = 0; y < PPU466::BackgroundHeight; ++y) {
 		for (uint32_t x = 0; x < PPU466::BackgroundWidth; ++x) {
-			//TODO: make weird plasma thing
-			ppu.background[x+PPU466::BackgroundWidth*y] = ((x+y)%16);
+			ppu.background[x+PPU466::BackgroundWidth*y] = tile_idx[background_tile] | (palette_idx[background_tile] << 8);
 		}
 	}
+	ppu.background_color = glm::u8vec4(0xff, 0xff, 0xff, 0xff);
 
 	ppu.draw(drawable_size);
 }
