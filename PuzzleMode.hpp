@@ -89,6 +89,7 @@ struct PuzzleMode : Mode {
 	void move_up();
 	void move_down();
 	bool can_move(glm::u8vec2 pos);
+	void register_move();
 
 	//----- drawing handled by PPU466 -----
 	PPU466 ppu;
