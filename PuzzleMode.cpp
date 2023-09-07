@@ -16,39 +16,17 @@ PuzzleMode::PuzzleMode() {
 	}
 	
 
-	//Load player
-	{
-		std::ifstream player_file("sprites-runtime/player.bin", std::ios::binary | std::ios::in);
-		assert(player_file && "unable to read player.bin");
-		//read the palette index byte
-		uint8_t palette_idx_;
-		player_file.read(reinterpret_cast< char* >(&palette_idx_), 1);
-		palette_idx[tile_type::player] = palette_idx_;
-		//load all 2-bit color index 4 at a time (1 byte)
-		uint8_t buffer;
-		int x, y;
-		uint8_t idx = 0;
-		PPU466::Tile *tile_writing = &ppu.tile_table[tile_idx[tile_type::player]];
-		for (uint8_t t = 0; t < 8; t++) {
-			tile_writing->bit0[t] = (uint8_t)0;
-			tile_writing->bit1[t] = (uint8_t)0;
-		}
-		for (size_t i = 0; i < 16; i++) {
-			player_file.read(reinterpret_cast< char* >(&buffer), 1);
-			std::cout << (int)buffer << std::endl;
-			for (size_t j = 0; j < 4; j++) {
-				y = idx / 8;
-				x = idx - y * 8;
-				uint8_t bit_idx = (buffer >> ((3 - j) * 2)) & 0b11;
-				uint8_t bit_idx_0 = bit_idx & 0b01;
-				uint8_t bit_idx_1 = (bit_idx & 0b10) >> 1;
-				tile_writing->bit0[y] = tile_writing->bit0[y] | (bit_idx_0 << x);
-				tile_writing->bit1[y] = tile_writing->bit1[y] | (bit_idx_1 << x);
-				std::cout << "x:" << x << ", y:" << y << ", " << (int)bit_idx_1 << (int)bit_idx_0 << std::endl;
-				idx++;
-			}
-		}
-	}
+	//Load all sprites
+	load_sprite("sprites-runtime/player.bin", player);
+	load_sprite("sprites-runtime/normal_grid.bin", normal_grid);
+	load_sprite("sprites-runtime/reverse_grid.bin", reverse);
+	load_sprite("sprites-runtime/key_grid.bin", key);
+	load_sprite("sprites-runtime/door_grid.bin", door);
+	load_sprite("sprites-runtime/block_grid.bin", block);
+	load_sprite("sprites-runtime/up_arrow.bin", up_arrow);
+	load_sprite("sprites-runtime/left_arrow.bin", left_arrow);
+	load_sprite("sprites-runtime/down_arrow.bin", down_arrow);
+	load_sprite("sprites-runtime/right_arrow.bin", right_arrow);
 }
 
 PuzzleMode::~PuzzleMode() {
@@ -154,3 +132,34 @@ void PuzzleMode::draw(glm::uvec2 const &drawable_size) {
 // void PuzzleMode::move_down() {
 //     if (!playerCanMove) return;
 // }
+
+void PuzzleMode::load_sprite(const char* file_dir, tile_type ttype) {
+	std::ifstream player_file(file_dir, std::ios::binary | std::ios::in);
+	assert(player_file && "unable to read sprite");
+	//read the palette index byte
+	uint8_t palette_idx_;
+	player_file.read(reinterpret_cast< char* >(&palette_idx_), 1);
+	palette_idx[ttype] = palette_idx_;
+	//load all 2-bit color index 4 at a time (1 byte)
+	uint8_t buffer;
+	int x, y;
+	uint8_t idx = 0;
+	PPU466::Tile *tile_writing = &ppu.tile_table[tile_idx[ttype]];
+	for (uint8_t t = 0; t < 8; t++) {
+		tile_writing->bit0[t] = (uint8_t)0;
+		tile_writing->bit1[t] = (uint8_t)0;
+	}
+	for (size_t i = 0; i < 16; i++) {
+		player_file.read(reinterpret_cast< char* >(&buffer), 1);
+		for (size_t j = 0; j < 4; j++) {
+			y = idx / 8;
+			x = idx - y * 8;
+			uint8_t bit_idx = (buffer >> ((3 - j) * 2)) & 0b11;
+			uint8_t bit_idx_0 = bit_idx & 0b01;
+			uint8_t bit_idx_1 = (bit_idx & 0b10) >> 1;
+			tile_writing->bit0[y] = tile_writing->bit0[y] | (bit_idx_0 << x);
+			tile_writing->bit1[y] = tile_writing->bit1[y] | (bit_idx_1 << x);
+			idx++;
+		}
+	}
+}

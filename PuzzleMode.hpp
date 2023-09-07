@@ -57,6 +57,8 @@ struct PuzzleMode : Mode {
 	std::map<tile_type, uint8_t> palette_idx;
 
 	//----- helpers -----
+	private:
+	void load_sprite(const char* file_dir, tile_type ttype);
 	// private:
 	// void move_left();
 	// void move_right();
