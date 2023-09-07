@@ -74,18 +74,15 @@ bool PuzzleMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_siz
 }
 
 void PuzzleMode::update(float elapsed) {
-    // if (left.triggered) move_left();
-    // if (right.triggered) move_right();
-    // if (up.triggered) move_up();
-    // if (down.triggered) move_down();
+    if (left.triggered) move_left();
+    if (right.triggered) move_right();
+    if (up.triggered) move_up();
+    if (down.triggered) move_down();
 
     left.triggered = false;
     right.triggered = false;
     up.triggered = false;
     down.triggered = false;
-
-	background_fade += elapsed / 10.0f;
-	background_fade -= std::floor(background_fade);
 }
 
 void PuzzleMode::draw(glm::uvec2 const &drawable_size) {
@@ -120,21 +117,55 @@ void PuzzleMode::draw(glm::uvec2 const &drawable_size) {
 	ppu.draw(drawable_size);
 }
 
-// void PuzzleMode::move_left() {
-//     if (!playerCanMove) return;
-// }
+void PuzzleMode::move_left() {
+    if (!playerCanMove) return;
+	glm::u8vec2 *player_pos = &level_state[player][0];
+	glm::u8vec2 player_pos_after = glm::u8vec2{player_pos->x - 1, player_pos->y};
+	if (!can_move(player_pos_after)) return;
 
-// void PuzzleMode::move_right() {
-//     if (!playerCanMove) return;
-// }
+	*player_pos = player_pos_after;
+}
 
-// void PuzzleMode::move_up() {
-//     if (!playerCanMove) return;
-// }
+void PuzzleMode::move_right() {
+    if (!playerCanMove) return;
+	glm::u8vec2 *player_pos = &level_state[player][0];
+	glm::u8vec2 player_pos_after = glm::u8vec2{player_pos->x + 1, player_pos->y};
+	if (!can_move(player_pos_after)) return;
 
-// void PuzzleMode::move_down() {
-//     if (!playerCanMove) return;
-// }
+	*player_pos = player_pos_after;
+}
+
+void PuzzleMode::move_up() {
+    if (!playerCanMove) return;
+	glm::u8vec2 *player_pos = &level_state[player][0];
+	glm::u8vec2 player_pos_after = glm::u8vec2{player_pos->x, player_pos->y + 1};
+	if (!can_move(player_pos_after)) return;
+
+	*player_pos = player_pos_after;
+}
+
+void PuzzleMode::move_down() {
+    if (!playerCanMove) return;
+	glm::u8vec2 *player_pos = &level_state[player][0];
+	glm::u8vec2 player_pos_after = glm::u8vec2{player_pos->x, player_pos->y - 1};
+	if (!can_move(player_pos_after)) return;
+
+	*player_pos = player_pos_after;
+}
+
+bool PuzzleMode::can_move(glm::u8vec2 pos){
+	if ((pos.x < 0) || (pos.x >= PuzzleMode::LevelGridWidth) || 
+	    (pos.y < 0) || (pos.y >= PuzzleMode::LevelGridHeight)) {
+		return false;
+	}
+
+	std::vector<glm::u8vec2> *blocks = &level_state[block];
+	if (std::find(blocks->begin(), blocks->end(), pos) != blocks->end()) {
+		return false;
+	}
+
+	return true;
+}
 
 void PuzzleMode::load_sprite(const char* file_dir, tile_type ttype) {
 	std::ifstream player_file(file_dir, std::ios::binary | std::ios::in);

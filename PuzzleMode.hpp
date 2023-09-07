@@ -18,9 +18,6 @@ struct PuzzleMode : Mode {
 	// ----- game state -----
 	bool playerCanMove = true;	// false when move anim playing
 
-	//player position
-	glm::vec2 player_pos = glm::vec2(0.0f);
-
 	//input tracking.
 	struct Button {
 		bool triggered = false;
@@ -87,15 +84,12 @@ struct PuzzleMode : Mode {
 	void load_sprite(const char* file_dir, tile_type ttype);
 	void draw_tile_of_type(tile_type ttype, uint8_t &sprite_used);
 	glm::u8vec2 grid_to_screen_pos(glm::u8vec2 grid_pos);
-	// private:
-	// void move_left();
-	// void move_right();
-	// void move_up();
-	// void move_down();
+	void move_left();
+	void move_right();
+	void move_up();
+	void move_down();
+	bool can_move(glm::u8vec2 pos);
 
 	//----- drawing handled by PPU466 -----
 	PPU466 ppu;
-
-	//some weird background animation:
-	float background_fade = 0.0f;
 };
